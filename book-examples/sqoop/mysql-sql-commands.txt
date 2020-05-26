@@ -1,0 +1,9 @@
+mysql> create database mysqooptest;
+mysql> use mysqooptest;
+mysql> create table sqoop_import (name varchar(50), age integer);
+mysql> insert into sqoop_import values ("James", 50);
+mysql> insert into sqoop_import values ("Harry", 18);
+mysql> insert into sqoop_import values ("Voldy", 101);
+mysql> create table sqoop_export (name varchar(50), age integer);
+mysql> alter table sqoop_import ADD PRIMARY KEY(name);
+mysql> alter table sqoop_export ADD PRIMARY KEY(name);

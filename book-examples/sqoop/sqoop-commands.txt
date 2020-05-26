@@ -1,0 +1,16 @@
+[root@sandbox ~]# sqoop import \ 
+> --username root \
+> --connect jdbc:mysql://sandbox.hortonworks.com/mysqooptest \
+> --table sqoop_import \
+> --target-dir /user/root/sqoop_import \
+> --as-textfile
+
+==============
+==============
+
+[root@sandbox ~]# sqoop export \
+> --username root \
+> --connect jdbc:mysql://sandbox.hortonworks.com/mysqooptest \
+> --table sqoop_export \
+> --export-dir /user/root/sqoop_import \
+> --input-fields-terminated-by ","
