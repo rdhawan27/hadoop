@@ -1,0 +1,2 @@
+Hi, My name is Dinesh Sachdev. We are learning MapReduce.
+MapReduce is a framework using which we can write applications to process huge amounts of data, in parallel, across a distributed environment, in a reliable manner. As the name implies, a MapReduce program/ algorithm contains two important tasks/ phases, namely Map and Reduce.

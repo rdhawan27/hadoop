@@ -1,0 +1,1 @@
+[root@sandbox Ingestion]# flume-ng agent -n agent -c conf -f myagent.conf

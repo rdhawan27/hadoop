@@ -1,0 +1,3 @@
+[root@sandbox ~]# hadoop fs -mkdir mr_word_count_in
+[root@sandbox ~]# hadoop fs -put mr_input_doc.txt mr_word_count_in/
+[root@sandbox ~]# hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2.2.0.2.0.6.0-76.jar wordcount /user/root/mr_word_count_in /user/root/mr_word_count_out

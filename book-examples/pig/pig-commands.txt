@@ -1,0 +1,57 @@
+grunt> ls /user/root/sqoop_import
+
+grunt> cd /user/root/sqoop_import
+
+grunt> pwd
+
+grunt> cat part-m-00000
+
+grunt> employee= LOAD 'part*' using TextLoader();
+
+grunt> dump employee;
+
+grunt> employee= LOAD 'part*' USING PigStorage(',') as (name:bytearray, age:int);
+
+grunt> describe employee;
+
+grunt> oldemployee= FILTER employee BY age>50;
+
+grunt> dump oldemployee;
+
+grunt> STORE employee into '/user/root/pig_save' using PigStorage(',');
+
+grunt> STORE employee into '/user/root/pig_json' using JsonStorage();
+
+grunt> new_employee_r= FOREACH employee GENERATE name, age, age%2 as gender, age*100 as school_fees;
+grunt> dump new_employee_r;
+
+
+grunt> new_employee_r1= FOREACH new_employee_r GENERATE name, age, (CASE WHEN gender == 0 THEN 'F' else 'M' end) as gender, age*100 as school_fees;
+
+grunt> dump new_employee_r1;
+
+grunt> tmp_gender= DISTINCT ( FOREACH new_employee_r1 GENERATE gender);
+grunt> dump tmp_gender;
+
+grunt> tmp_sub= FOREACH tmp_gender GENERATE gender, {('science'),('maths'),('sports')} as sub_bag;
+grunt> describe tmp_sub;
+
+grunt> subjects= FOREACH tmp_sub GENERATE gender, flatten(sub_bag) as sub;
+grunt> dump subjects;
+
+grunt> employee_sub = JOIN new_employee_r1 by gender, subjects by gender;
+grunt> dump employee_sub;
+
+grunt> grunt> group_emp=  GROUP employee_sub by new_employee_r1::gender;
+grunt> describe group_emp;
+
+grunt> count_rows= FOREACH group_emp GENERATE group, COUNT(employee_sub);
+grunt> dump count_rows;
+
+-----
+grunt> REGISTER mybigpig.jar;
+grunt> DEFINE MY_UP_PIG big.pig.UpperPig();
+grunt> test_udf= FOREACH employee GENERATE MY_UP_PIG(name);
+-----
+grunt> pep_rel= LOAD 'exercise.people' USING org.apache.hive.hcatalog.pig.HCatLoader();
+

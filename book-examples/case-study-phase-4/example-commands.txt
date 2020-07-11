@@ -1,0 +1,2 @@
+[root@sandbox ~]# yarn  jar /root/dsacd/MapReduce/lib/dsacd.jar biz.ds.www.dfs.MergeFiles "hdfs://sandbox.hortonworks.com:8020" "/user/root/dsacd/flume"
+"/user/root/dsacd/data/processed" "/user/root/dsacd/data/tmp" "4096"
