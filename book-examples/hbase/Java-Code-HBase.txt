@@ -1,0 +1,112 @@
+/*
+ * Copyright [2015] [Dinesh Sachdev]
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+  */
+package demo;
+
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
+
+/**
+ * Sample class to connect and perform HBase operations
+ * @author Dinesh Sachdev
+ *
+ */
+public class MyHBaseClient {
+
+	/**
+	 * @param args
+	 * @throws IOException
+	 * @throws ClassNotFoundException 
+	 * @throws InterruptedException 
+	 */
+	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
+		// Instantiating configuration class
+	      Configuration con = HBaseConfiguration.create();
+
+	      // Instantiating HbaseAdmin class
+	      HBaseAdmin admin = new HBaseAdmin(con);
+	      
+	      // Instantiating table descriptor class
+	      HTableDescriptor tableDescriptor = new
+	      HTableDescriptor(TableName.valueOf("myfirsthbasetable"));
+	      
+	      // Adding column families to table descriptor
+	      tableDescriptor.addFamily(new HColumnDescriptor("cf1"));
+	      tableDescriptor.addFamily(new HColumnDescriptor("cf2"));
+	      
+	      // Execute the table through admin
+	      admin.createTable(tableDescriptor);
+	      System.out.println("===================Table created==========================");
+	      
+	      // Instantiating HTable class
+	      HTable hTable = new HTable(con, "myfirsthbasetable");
+	      
+	      // Instantiating Put class
+	      // accepts a row name.
+	      Put p = new Put(Bytes.toBytes("1")); 
+
+	      // adding values using add() method
+	      // accepts column family name, qualifier/row name ,value
+	      p.add(Bytes.toBytes("cf1"),
+	      Bytes.toBytes("name"),Bytes.toBytes("Hiten"));
+
+	      p.add(Bytes.toBytes("cf1"),
+	      Bytes.toBytes("age"),Bytes.toBytes("4"));
+	      
+	      hTable.put(p);
+	      System.out.println("======================data inserted========================");
+	      
+	      // closing HTable
+	      hTable.close();
+	      
+	      // Instantiating Get class
+	      Get g = new Get(Bytes.toBytes("1"));
+	      // Reading the data
+	      Result result = hTable.get(g);
+	      // Reading values from Result class object
+	      byte [] value = result.getValue(Bytes.toBytes("cf1"),Bytes.toBytes("name"));
+
+	      byte [] value1 = result.getValue(Bytes.toBytes("cf1"),Bytes.toBytes("age"));
+
+	      // Printing the values
+	      String name = Bytes.toString(value);
+	      String age = Bytes.toString(value1);
+	      
+	      System.out.println("name: " + name + " age: " + age);
+	      
+	      System.out.println("======================data read========================");
+	  	  
+	      // Instantiating Delete class
+	      Delete delete = new Delete(Bytes.toBytes("1"));
+	      delete.deleteColumn(Bytes.toBytes("cf1"), Bytes.toBytes("name"));
+	      delete.deleteFamily(Bytes.toBytes("cf2"));
+
+	      // deleting the data
+	      hTable.delete(delete);
+
+	      // closing the HTable object
+	      hTable.close();
+	      System.out.println("======================data deleted======================");
+	}
+}
