@@ -1,5 +1,5 @@
 # dsacd
-This code repository contains code for book named - Step up developers to Big Data
+This code repository contains code for book named - Thinking Big, Developers guide for Big Data Engineering & Analytics
 ---
 
    Copyright [2015] [Dinesh Sachdev]
