@@ -1,0 +1,22 @@
+<workflow-app xmlns="uri:oozie:workflow:0.2" name="example-workflow">
+	<start to="example_pig_sample"/>
+	
+	<action name="example_pig_sample">
+		<pig>
+			<job-tracker>${resourceManager}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="/user/root/pig_save"/>
+			</prepare>
+			<script>my_pig_script.pig</script>
+		</pig>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
+	
+	<kill name="fail">
+		<message>Pig Job Failed</message>
+	</kill>
+	
+	<end name="end"/>
+</workflow-app>
