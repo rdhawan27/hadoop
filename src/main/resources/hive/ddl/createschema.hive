@@ -1,0 +1,111 @@
+--set the properties
+set hbase.zookeeper.quorum=${param_zoo_quorum};
+set zookeeper.znode.parent=${param_zoo_znode_parent};
+--192.168.190.128
+--/hbase-unsecure
+----
+---- Create table dsacd_location
+----
+create external table if not exists dsacd_location (
+ipaddress string,
+location string )
+row format delimited
+fields terminated by '\t'
+location '${param_dsacd_location_tab}';
+--/user/root/dsacd/hive/dsacd_location
+----
+---- Load data in table dsacd_location
+----
+--LOAD DATA INPATH '${param_location_data_file}' OVERWRITE INTO TABLE dsacd_location;
+--/root/dsacd/dsacd_location.txt
+----
+---- Create table dsacd_user
+----
+create external table if not exists dsacd_user (
+sessionid string,
+timestamps string,
+tipaddress string,
+name string,
+emailid string,
+phonenumber string,
+gender string,
+city string,
+maritalstatus string,
+age int,
+page string,
+device string,
+browser string,
+paymenttype string,
+time string,
+tdate string)
+partitioned by (ipaddress string, date string)
+row format delimited
+fields terminated by '\t'
+location '${param_dsacd_user_tab}';
+--/user/root/dsacd/hive/dsacd_user
+----
+---- Create table dsacd_vi
+----
+create external table if not exists dsacd_vi (
+sessionid string,
+timestamps string,
+tipaddress string,
+itemid string,
+itemdesc string,
+itemtype string,
+price bigint,
+time string,
+tdate string)
+partitioned by (ipaddress string, date string)
+row format delimited
+fields terminated by '\t'
+location '${param_dsacd_vi_tab}';
+--/user/root/dsacd/hive/dsacd_vi
+----
+---- Create table dsacd_ci
+----
+create external table if not exists dsacd_ci (
+sessionid string,
+timestamps string,
+tipaddress string,
+itemid string,
+itemdesc string,
+itemtype string,
+price bigint,
+time string,
+tdate string)
+partitioned by (ipaddress string, date string)
+row format delimited
+fields terminated by '\t'
+location '${param_dsacd_ci_tab}';
+--/user/root/dsacd/hive/dsacd_ci
+----
+---- Create table dsacd_pi
+----
+create external table if not exists dsacd_pi (
+sessionid string,
+timestamps string,
+tipaddress string,
+itemid string,
+itemdesc string,
+itemtype string,
+price bigint,
+time string,
+tdate string)
+partitioned by (ipaddress string, date string)
+row format delimited
+fields terminated by '\t'
+location '${param_dsacd_pi_tab}';
+--/user/root/dsacd/hive/dsacd_pi
+----
+---- Create Hive-HBase table dsacd_hb_ref_back_tab
+----
+create table if not exists dsacd_hb_ref_back_tab (rowkey String, refresh_count int, back_count int ) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:refresh_count, cf:back_count");
+----
+---- Create Hive-HBase table dsacd_hb_med_avg_tab
+----
+create table if not exists dsacd_hb_med_avg_tab (rowkey String, median int, average int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:median, cf:average");
+----
+---- Create Hive-HBase table dsacd_hb_cart_purch_tab
+----
+create table if not exists dsacd_hb_cart_purch_tab (rowkey String, no_cart_item int, no_purchase_item int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:no_cart_item, cf:no_purchase_item");
