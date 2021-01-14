@@ -21,3 +21,16 @@
 ####
 ####
 ####
+[root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows
+[root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/pre_process
+[root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/process
+[root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/lib
+#
+[root@sandbox-hdp ~]# hadoop fs -put /root/datafu-1.2.0.jar /user/root/dsacd/workflows/lib/
+[root@sandbox-hdp ~]# hadoop fs -put /root/dsacd/JSONWriteTool/lib/dsacd.jar /user/root/dsacd/workflows/lib/
+#
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/hive/ddl/createschema.hive /user/root/dsacd/workflows/process/
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/hive/dml/*.hive /user/root/dsacd/workflows/process/
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/pig/*.pig /user/root/dsacd/workflows/process/
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/oozie/workflow/process/*.xml /user/root/dsacd/workflows/process/
+#
