@@ -1,0 +1,513 @@
+<!--Copyright [2015] [Dinesh Sachdev]
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ -->
+<workflow-app xmlns="uri:oozie:workflow:0.2" name="processing-workflow">
+	<start to="forkingAnalytics"/>
+
+	<fork name="forkingAnalytics">
+        <path start="locationTraffic"/>
+		<path start="userVisitHive"/>
+    </fork>
+	
+	
+	<action name="locationTraffic">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDtLocationCtTab}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapreduce.job.queuename</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+           <script>location_traffic.pig</script>
+		   <param>dsacd_date=${dsacdDate}</param>
+		   <param>dsacd_hb_dt_location_ct_tab=${dsacdHbDtLocationCtTab}</param>
+        </pig>
+        <ok to="browserDevice"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="browserDevice">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDevicebrowgenDtCtTab}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapreduce.job.queuename</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+           <script>browser-device.pig</script>
+		   <param>dsacd_date=${dsacdDate}</param>
+		   <param>dsacd_hb_devicebrowgen_dt_ct_tab=${dsacdHbDevicebrowgenDtCtTab}</param>
+        </pig>
+        <ok to="pageUser"/>
+        <error to="fail"/>
+    </action>
+
+
+	<action name="pageUser">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDtPageCtTab}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapreduce.job.queuename</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+           <script>page_user.pig</script>
+		   <param>dsacd_date=${dsacdDate}</param>
+		   <param>dsacd_hb_dt_page_ct_tab=${dsacdHbDtPageCtTab}</param>
+        </pig>
+        <ok to="sessionAnalysis"/>
+        <error to="fail"/>
+    </action>
+
+    <action name="sessionAnalysis">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDtSessionidLengthTab}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapreduce.job.queuename</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+           <script>session-analysis.pig</script>
+		   <param>data_fu_jar_path=${dataFuJarPath}</param>	
+		   <param>param_zoo_quorum=${paramZooQuorum}</param>
+     	   <param>param_zoo_znode_parent=${paramZooZnodeParent}</param>
+		   <param>dsacd_date=${dsacdDate}</param>
+		   <param>dsacd_hb_dt_sessionid_length_tab=${dsacdHbDtSessionidLengthTab}</param>
+        </pig>
+        <ok to="userPayment"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="userPayment">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDtPaytypeCtTab}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapreduce.job.queuename</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+           <script>user-payment.pig</script>
+		   <param>dsacd_hb_dt_paytype_ct_tab=${dsacdHbDtPaytypeCtTab}</param>
+		   <param>dsacd_date=${dsacdDate}</param>
+        </pig>
+        <ok to="joiningAnalytics"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="userVisitHive">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbEmailDtTypeCtTab}"/>
+            </prepare>
+     	    <job-xml>hive-site.xml</job-xml>
+            <configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+            <script>user-visit.hive</script>
+			<param>dsacd_hb_email_dt_type_ct_tab=${dsacdHbEmailDtTypeCtTab}</param>
+			<param>dsacd_date=${dsacdDate}</param>
+        </hive>
+        <ok to="purchaseGender"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="purchaseGender">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${dsacdHbDtGenMsSumTab}"/>
+            </prepare>
+     	    <job-xml>hive-site.xml</job-xml>
+            <configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+            <script>purchase-gender.hive</script>
+			<param>dsacd_hb_dt_gen_ms_sum_tab=${dsacdHbDtGenMsSumTab}</param>
+			<param>dsacd_date=${dsacdDate}</param>
+        </hive>
+        <ok to="backRefresh"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="backRefresh">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <!--delete path="${dsacdHbDtGenMsSumTab}"/-->
+            </prepare>
+     	    <job-xml>hive-site.xml</job-xml>
+            <configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+            <script>back_refresh.hive</script>
+			<param>param_zoo_quorum=${paramZooQuorum}</param>
+			<param>param_zoo_znode_parent=${paramZooZnodeParent}</param>
+			<param>dsacd_date=${dsacdDate}</param>
+        </hive>
+        <ok to="cartPurchase"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="cartPurchase">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <!--delete path="${dsacdHbDtGenMsSumTab}"/-->
+            </prepare>
+     	    <job-xml>hive-site.xml</job-xml>
+            <configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+            <script>cart-purchase.hive</script>
+			<param>param_zoo_quorum=${paramZooQuorum}</param>
+			<param>param_zoo_znode_parent=${paramZooZnodeParent}</param>
+			<param>dsacd_date=${dsacdDate}</param>
+        </hive>
+        <ok to="joiningAnalytics"/>
+        <error to="fail"/>
+    </action>
+
+	<join name="joiningAnalytics" to="forkingMigrateHBase"/>
+
+	<fork name="forkingMigrateHBase">
+        <path start="sessionAnalysisMigrateHbase"/>
+		<path start="userVisitHiveMigrateHbase"/>
+    </fork>
+
+	<action name="userVisitHiveMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${uvhInputDirPath}</arg>
+			<arg>${uvhHBaseTableName}</arg>
+			<arg>${uvhDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="purchaseGenderMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+
+	<action name="purchaseGenderMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${pgInputDirPath}</arg>
+			<arg>${pgHBaseTableName}</arg>
+			<arg>${pgDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="userPaymentMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="userPaymentMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${upInputDirPath}</arg>
+			<arg>${upHBaseTableName}</arg>
+			<arg>${upDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="joiningMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="sessionAnalysisMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${saInputDirPath}</arg>
+			<arg>${saHBaseTableName}</arg>
+			<arg>${saDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="pageUserMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="pageUserMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${puInputDirPath}</arg>
+			<arg>${puHBaseTableName}</arg>
+			<arg>${puDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="locationTrafficMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="locationTrafficMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${ltInputDirPath}</arg>
+			<arg>${ltHBaseTableName}</arg>
+			<arg>${ltDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="browserDeviceMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="browserDeviceMigrateHbase">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.utils.hbase.MigrateToHbase</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${bdInputDirPath}</arg>
+			<arg>${bdHBaseTableName}</arg>
+			<arg>${bdDeleteInputDir}</arg>
+			<arg>${paramZooQuorum}</arg>
+			<arg>${paramZooZnodeParent}</arg>
+		</java>
+		<ok to="joiningMigrateHbase"/>
+		<error to="fail"/>
+	</action>
+
+	<join name="joiningMigrateHbase" to="end"/>
+
+	<kill name="fail">
+		<message>"Killed job due to error: ${wf:errorMessage(wf:lastErrorNode())}"</message>
+	</kill>
+
+	<end name="end" />
+
+</workflow-app>

@@ -1,0 +1,19 @@
+--
+--  Copyright [2015] [Dinesh Sachdev]
+--  Licensed under the Apache License, Version 2.0 (the "License");
+--  you may not use this file except in compliance with the License.
+--  You may obtain a copy of the License at
+--      http://www.apache.org/licenses/LICENSE-2.0
+--  Unless required by applicable law or agreed to in writing, software
+--  distributed under the License is distributed on an "AS IS" BASIS,
+--  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+--  See the License for the specific language governing permissions and
+--  limitations under the License.
+--
+set hbase.zookeeper.quorum=${param_zoo_quorum};
+set zookeeper.znode.parent=${param_zoo_znode_parent};
+--set hbase.zookeeper.quorum=192.168.190.128;
+--set zookeeper.znode.parent=/hbase-unsecure;
+
+insert overwrite table dsacd_hb_ref_back_tab
+select a.date, sum(a.refresh_count), sum(a.back_count) from (select sessionid, timestamps, time, date, page, case ( lead(page, 1, "DUMMY_REFRESH_PAGE_NULL") over( partition by sessionid order by timestamps ) == page) when true then "1" when false then "0" end as refresh_count, case(lag(page, 2, "DUMMY_BACK_PAGE_NULL") over( partition by sessionid order by timestamps ) == page) when true then "1" when false then "0" end as back_count from dsacd_user where date="${dsacd_date}" ) a group by a.date;

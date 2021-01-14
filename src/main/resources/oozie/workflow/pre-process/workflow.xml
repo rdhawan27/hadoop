@@ -1,0 +1,473 @@
+<!--Copyright [2015] [Dinesh Sachdev]
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ -->
+<workflow-app xmlns="uri:oozie:workflow:0.2" name="pre-processing-workflow">
+	
+	<start to="javaMainActionToMergeFiles"/>
+
+
+	<action name="javaMainActionToMergeFiles">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<mkdir path="${jmatmfoutputDir}"/>
+				<mkdir path="${jmatmftempDir}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MergeFiles</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${jmatmfinputDir}</arg>
+			<arg>${jmatmfoutputDir}</arg>
+			<arg>${jmatmftempDir}</arg>
+			<arg>${jmatmfoutFileSize}</arg>
+		</java>
+		<ok to="schemaCreation"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="schemaCreation">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <!--delete path="${nameNode}user/root/___"/-->
+            </prepare>
+     	    <job-xml>hive-site.xml</job-xml>
+            <configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+            <script>createschema.hive</script>
+			<param>param_zoo_quorum=${paramZooQuorum}</param>
+			<param>param_zoo_znode_parent=${paramZooZnodeParent}</param>
+			<param>param_dsacd_location_tab=${paramDsacdLocationTab}</param>
+			<!--param>param_location_data_file=${paramLocationDataFile}</param-->
+			<param>param_dsacd_user_tab=${paramDsacdUserTab}</param>
+			<param>param_dsacd_vi_tab=${paramDsacdViTab}</param>
+			<param>param_dsacd_ci_tab=${paramDsacdCiTab}</param>
+			<param>param_dsacd_pi_tab=${paramDsacdPiTab}</param>
+        </hive>
+        <ok to="copyfiletohivetabledsacd_location"/>
+        <error to="fail"/>
+    </action>
+
+	<action name="copyfiletohivetabledsacd_location">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<!--mkdir path="${outputDir}"/>
+				<mkdir path="${tempDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MoveFiles</main-class>
+			<arg>${nameNode}</arg>
+            <arg>${dlInputDir}</arg>
+			<arg>${dlOutputDir}</arg>
+			<arg>${dlRemoveInputDirAfterMove}</arg>
+			<arg>${dlCreateHivePartition}</arg>
+			<arg>${hiveURL}</arg>
+			<arg></arg>
+			<arg></arg>
+		</java>
+		<ok to="forkingMRs"/>
+		<error to="fail"/>
+	</action>
+
+	<fork name="forkingMRs">
+        <path start="userFlattenDriver"/>
+		<path start="visitedItemFlattenDriver"/>
+		<!--path start="cartitemCartPurchaseFlattenDriver"/>
+		<path start="purchaseitemCartPurchaseFlattenDriver"/-->
+    </fork>
+
+	<action name="visitedItemFlattenDriver">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<delete path="${vifdOutputDir}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.preprocess.visiteditem.VisitedItemFlattenDriver</main-class>
+            <arg>${vifdInputDir}</arg>
+			<arg>${vifdOutputDir}</arg>
+			<arg>${vitimeDescFlag}</arg>
+		</java>
+		<ok to="cartitemCartPurchaseFlattenDriver"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="userFlattenDriver">
+		<map-reduce>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${ufdOutputDir}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>biz.ds.www.preprocess.user.UserFlattenMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value>biz.ds.www.preprocess.IPAdressMultiOutFlattenReducer</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.output.lazyoutputformat.outputformat</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				</property>
+				<property>
+					<name>mapreduce.job.partitioner.class</name>
+					<value>biz.ds.www.preprocess.SessionPartitioner</value>
+				</property>
+				<!--property>
+					<name>mapreduce.job.output.key.comparator.class</name>
+					<value>biz.ds.www.preprocess.UserWritableKeyComparator</value>
+				</property-->
+				<property>
+					<name>mapreduce.job.output.group.comparator.class</name>
+					<value>biz.ds.www.preprocess.SessionIDGroupComparator</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>biz.ds.www.types.UserWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.Text</value>
+				</property>
+				<!--property>
+					<name>mapreduce.job.reduces</name>
+					<value>20</value>
+				</property-->
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${ufdInputDir}</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${ufdOutputDir}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="purchaseitemCartPurchaseFlattenDriver"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="purchaseitemCartPurchaseFlattenDriver">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<delete path="${picpfdOutputDir}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.preprocess.cartpurchaseitem.CartPurchaseFlattenDriver</main-class>
+            <arg>${picpfdInputDir}</arg>
+			<arg>${picpfdOutputDir}</arg>
+			<arg>${picpfdtimeDescFlag}</arg>
+			<arg>${picpfdcartPurchaseType}</arg>
+		</java>
+		<ok to="joiningMR"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="cartitemCartPurchaseFlattenDriver">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+				<delete path="${cicpfdOutputDir}"/>
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.preprocess.cartpurchaseitem.CartPurchaseFlattenDriver</main-class>
+            <arg>${cicpfdInputDir}</arg>
+			<arg>${cicpfdOutputDir}</arg>
+			<arg>${cicpfdtimeDescFlag}</arg>
+			<arg>${cicpfdcartPurchaseType}</arg>
+		</java>
+		<ok to="joiningMR"/>
+		<error to="fail"/>
+	</action>
+	
+	<join name="joiningMR" to="forkingJavaMoveToHive"/>
+
+	<fork name="forkingJavaMoveToHive">
+        <path start="duMoveFilesToHive"/>
+		<path start="dviMoveFilesToHive"/>
+    </fork>
+
+	<action name="duMoveFilesToHive">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MoveFiles</main-class>
+            <arg>${dumfthNameNode}</arg>
+			<arg>${dumfthInputDirPath}</arg>
+			<arg>${dumfthOutputDirPath}</arg>
+			<arg>${dumfthRemoveInputDirAfterMove}</arg>
+			<arg>${dumfthCreateHivePartition}</arg>
+			<arg>${hiveURL}</arg>
+			<arg></arg>
+			<arg></arg>
+		</java>
+		<ok to="dciMoveFilesToHive"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="dviMoveFilesToHive">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MoveFiles</main-class>
+            <arg>${dvimfthNameNode}</arg>
+			<arg>${dvimfthInputDirPath}</arg>
+			<arg>${dvimfthOutputDirPath}</arg>
+			<arg>${dvimfthRemoveInputDirAfterMove}</arg>
+			<arg>${dvimfthCreateHivePartition}</arg>
+			<arg>${hiveURL}</arg>
+			<arg></arg>
+			<arg></arg>
+		</java>
+		<ok to="dpiMoveFilesToHive"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="dciMoveFilesToHive">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MoveFiles</main-class>
+            <arg>${dcimfthNameNode}</arg>
+			<arg>${dcimfthInputDirPath}</arg>
+			<arg>${dcimfthOutputDirPath}</arg>
+			<arg>${dcimfthRemoveInputDirAfterMove}</arg>
+			<arg>${dcimfthCreateHivePartition}</arg>
+			<arg>${hiveURL}</arg>
+			<arg></arg>
+			<arg></arg>
+		</java>
+		<ok to="joiningJavaMove"/>
+		<error to="fail"/>
+	</action>
+
+	<action name="dpiMoveFilesToHive">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<!--delete path="${outputDir}"/-->
+            </prepare>
+			<configuration>
+				<property>
+					<name>mapred.job.queue.name</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapreduce.map.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+				<property>
+					<name>mapreduce.reduce.log.level</name>
+					<value>${logLevel}</value>
+				</property>
+			</configuration>
+			<main-class>biz.ds.www.dfs.MoveFiles</main-class>
+            <arg>${dpimfthNameNode}</arg>
+			<arg>${dpimfthInputDirPath}</arg>
+			<arg>${dpimfthOutputDirPath}</arg>
+			<arg>${dpimfthRemoveInputDirAfterMove}</arg>
+			<arg>${dpimfthCreateHivePartition}</arg>
+			<arg>${hiveURL}</arg>
+			<arg></arg>
+			<arg></arg>
+		</java>
+		<ok to="joiningJavaMove"/>
+		<error to="fail"/>
+	</action>
+	
+	<join name="joiningJavaMove" to="removeProcessedFiles"/>
+	
+
+	<action name="removeProcessedFiles">
+		<fs>
+			<delete path='${rpfDir}'/>
+            <mkdir path='${rpfDir}'/>
+		</fs>
+		<ok to="end"/>
+		<error to="fail"/>
+	</action>
+
+	<kill name="fail">
+		<message>"Killed job due to error: ${wf:errorMessage(wf:lastErrorNode())}"</message>
+	</kill>
+
+	<end name="end" />
+
+</workflow-app>
