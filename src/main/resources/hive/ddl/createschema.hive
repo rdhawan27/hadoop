@@ -11,8 +11,8 @@
 --  limitations under the License.
 --
 --set the properties
-set hbase.zookeeper.quorum=${param_zoo_quorum};
-set zookeeper.znode.parent=${param_zoo_znode_parent};
+--set hbase.zookeeper.quorum=${param_zoo_quorum};
+--set zookeeper.znode.parent=${param_zoo_znode_parent};
 --192.168.190.128
 --/hbase-unsecure
 ----
@@ -48,9 +48,9 @@ page string,
 device string,
 browser string,
 paymenttype string,
-time string,
+time1 string,
 tdate string)
-partitioned by (ipaddress string, date string)
+partitioned by (ipaddress string, date1 string)
 row format delimited
 fields terminated by '\t'
 location '${param_dsacd_user_tab}';
@@ -66,9 +66,9 @@ itemid string,
 itemdesc string,
 itemtype string,
 price bigint,
-time string,
+time1 string,
 tdate string)
-partitioned by (ipaddress string, date string)
+partitioned by (ipaddress string, date1 string)
 row format delimited
 fields terminated by '\t'
 location '${param_dsacd_vi_tab}';
@@ -84,9 +84,9 @@ itemid string,
 itemdesc string,
 itemtype string,
 price bigint,
-time string,
+time1 string,
 tdate string)
-partitioned by (ipaddress string, date string)
+partitioned by (ipaddress string, date1 string)
 row format delimited
 fields terminated by '\t'
 location '${param_dsacd_ci_tab}';
@@ -102,9 +102,9 @@ itemid string,
 itemdesc string,
 itemtype string,
 price bigint,
-time string,
+time1 string,
 tdate string)
-partitioned by (ipaddress string, date string)
+partitioned by (ipaddress string, date1 string)
 row format delimited
 fields terminated by '\t'
 location '${param_dsacd_pi_tab}';
@@ -112,12 +112,12 @@ location '${param_dsacd_pi_tab}';
 ----
 ---- Create Hive-HBase table dsacd_hb_ref_back_tab
 ----
-create table if not exists dsacd_hb_ref_back_tab (rowkey String, refresh_count int, back_count int ) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:refresh_count, cf:back_count");
+create external table if not exists dsacd_hb_ref_back_tab (rowkey String, refresh_count int, back_count int ) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:refresh_count, cf:back_count");
 ----
 ---- Create Hive-HBase table dsacd_hb_med_avg_tab
 ----
-create table if not exists dsacd_hb_med_avg_tab (rowkey String, median int, average int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:median, cf:average");
+create external table if not exists dsacd_hb_med_avg_tab (rowkey String, median int, average int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:median, cf:average");
 ----
 ---- Create Hive-HBase table dsacd_hb_cart_purch_tab
 ----
-create table if not exists dsacd_hb_cart_purch_tab (rowkey String, no_cart_item int, no_purchase_item int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:no_cart_item, cf:no_purchase_item");
+create external table if not exists dsacd_hb_cart_purch_tab (rowkey String, no_cart_item int, no_purchase_item int) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:no_cart_item, cf:no_purchase_item");

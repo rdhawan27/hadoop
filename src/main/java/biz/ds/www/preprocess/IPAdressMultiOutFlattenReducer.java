@@ -44,7 +44,7 @@ public class IPAdressMultiOutFlattenReducer extends Reducer<UserWritable, Text, 
 			
 			String[] strs = parser.parse(value);
 			
-			String basePath = String.format("%s/%s/part","ipaddress="+strs[0], "date="+strs[1]);
+			String basePath = String.format("%s/%s/part","ipaddress="+strs[0], "date1="+strs[1]);
 			
 			multipleOutputs.write(key, value, basePath);
 		}

@@ -30,10 +30,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ClusterConnection;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HTableInterface;
+/*import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HTableInterface;*/
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import biz.ds.www.dfs.MoveFiles;
@@ -101,7 +106,7 @@ public class MigrateToHbase {
                 		}
                 		
                 		//pattern - rk, cf, cl, vl
-                		p.add(Bytes.toBytes(splits[1]), Bytes.toBytes(splits[2]), Bytes.toBytes(splits[3]));
+                		p.addColumn(Bytes.toBytes(splits[1]), Bytes.toBytes(splits[2]), Bytes.toBytes(splits[3]));
                 		
                 		putMap.put(splits[0], p);
                 		columnFamily.add(splits[1]);
@@ -119,20 +124,21 @@ public class MigrateToHbase {
 		}
 		
 		Configuration conf = HBUtils.getConf();
-		HBaseAdmin admin = HBUtils.getHBaseAdmin(conf);
-		HConnection hConnection = HBUtils.getHConnection(conf);
+		ClusterConnection conn = HBUtils.getHConnection(conf);
+		Admin admin = HBUtils.getHBaseAdmin(conn);
 		
 		for(String cf : columnFamily){
 			HBUtils.createTableCF(admin, hbTN, cf );
 		}
 		
-		HTableInterface tableInterface = HBUtils.getHTableInterface(hConnection, hbTN);
+		/*HTableDescriptor tableInterface = HBUtils.getHTableInterface( hbTN);*/
 		
+		Table table = conn.getTable(TableName.valueOf(hbTN.getBytes()));
 		for(Map.Entry<String, Put> entry: putMap.entrySet()){
-			tableInterface.put(entry.getValue());
+			table.put(entry.getValue());
 		}
 		
-		HBUtils.close(admin, tableInterface, hConnection);
+		HBUtils.close(admin, table, conn);
 		
 	}
 

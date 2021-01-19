@@ -10,11 +10,13 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 --
-pig_dsacd_user = LOAD 'dsacd_user' USING org.apache.hcatalog.pig.HCatLoader();
-pig_dsacd_user_filter = FILTER pig_dsacd_user BY date == '${dsacd_date}';
-pig_dsacd_user_group = GROUP pig_dsacd_user_filter BY (paymenttype, date);
+register hdfs:///user/root/dsacd/workflows/lib/hive-hcatalog-core.jar;
+register hdfs:///user/root/dsacd/workflows/lib/hive-hcatalog-pig-adapter.jar;
+pig_dsacd_user = LOAD 'dsacd_user' USING org.apache.hive.hcatalog.pig.HCatLoader();
+pig_dsacd_user_filter = FILTER pig_dsacd_user BY date1 == '${dsacd_date}';
+pig_dsacd_user_group = GROUP pig_dsacd_user_filter BY (paymenttype, date1);
 pig_dsacd_user_group_count = FOREACH pig_dsacd_user_group GENERATE FLATTEN(group), COUNT(pig_dsacd_user_filter) as pay_count;
-pig_dsacd_user_group_count_fin = FOREACH pig_dsacd_user_group_count GENERATE group::date, 'cf', group::paymenttype, pay_count;
+pig_dsacd_user_group_count_fin = FOREACH pig_dsacd_user_group_count GENERATE group::date1, 'cf', group::paymenttype, pay_count;
 --DUMP pig_dsacd_user_group_count;
 rmf ${dsacd_hb_dt_paytype_ct_tab};
 STORE pig_dsacd_user_group_count_fin INTO '${dsacd_hb_dt_paytype_ct_tab}' USING PigStorage(',');

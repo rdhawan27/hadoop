@@ -20,11 +20,17 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ClusterConnection;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+//import org.apache.hadoop.hbase.client.HConnection;
+//import org.apache.hadoop.hbase.client.HConnectionManager;
+//import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 
 public class HBUtils {
 
@@ -40,7 +46,7 @@ public class HBUtils {
 	
 	public  static Configuration getConf() throws MasterNotRunningException, ZooKeeperConnectionException, IOException{
 		Configuration conf = HBaseConfiguration.create();
-		conf.set("hbase.zookeeper.quorum", "sandbox.hortonworks.com");
+		conf.set("hbase.zookeeper.quorum", "sandbox-hdp.hortonworks.com");
 		conf.set("zookeeper.znode.parent", "/hbase-unsecure");
 		// conf.set("hbase.master","192.168.190.128:60000");
 		// conf.set("hbase.zookeeper.property.clientPort","2181");
@@ -48,21 +54,24 @@ public class HBUtils {
 		return conf;
 	}
 
-	public static HConnection getHConnection (Configuration conf) throws IOException{
-		return HConnectionManager.createConnection(conf);
+	public static ClusterConnection getHConnection (Configuration conf) throws IOException{
+		//return HConnectionManager.createConnection(conf);
+		return (ClusterConnection)  ConnectionFactory.createConnection(conf);
 	}
 	
-	public static HTableInterface getHTableInterface(HConnection hC, String tableName) throws IOException{
-		return hC.getTable(tableName);
+	public static HTableDescriptor getHTableInterface( String tableName) throws IOException{
+		//return hC.getTable(tableName);
+		return  new HTableDescriptor(TableName.valueOf(tableName.getBytes()));
 	}
 	
-	public static HBaseAdmin getHBaseAdmin(Configuration conf) throws MasterNotRunningException, ZooKeeperConnectionException, IOException{
-		return new HBaseAdmin(conf);
+	public static Admin getHBaseAdmin(ClusterConnection con) throws MasterNotRunningException, ZooKeeperConnectionException, IOException{
+		return con.getAdmin();
+		//return new HBaseAdmin(con);
 	}
 	
-	public static void createTableCF(HBaseAdmin admin, String tableName, String columnFamily) throws IOException{
+	public static void createTableCF(Admin admin, String tableName, String columnFamily) throws IOException{
 		
-		boolean isTPre = admin.isTableAvailable(tableName.getBytes());
+		boolean isTPre = admin.isTableAvailable(TableName.valueOf(tableName.getBytes()));
 		
 		if(LOG.isDebugEnabled())
 			LOG.debug("Is table persent in HBase: "+isTPre);
@@ -71,28 +80,28 @@ public class HBUtils {
 		HColumnDescriptor  col = null;
 		
 		if(!isTPre){
-			table = new HTableDescriptor(tableName);
+			table = new HTableDescriptor(TableName.valueOf(tableName.getBytes()));
 			col = new HColumnDescriptor(columnFamily);
 			table.addFamily(col);
 			admin.createTable(table);
 			LOG.info("Created table: "+table);
 		}
 		else{
-			table = admin.getTableDescriptor(tableName.getBytes());
+			table = admin.getTableDescriptor(TableName.valueOf(tableName.getBytes()));
 			col = table.getFamily(columnFamily.getBytes());
 			if(col == null){
 				col = new HColumnDescriptor(columnFamily);
 				
 				LOG.info("Adding column family: "+columnFamily);
-				admin.disableTable(tableName);
-				admin.addColumn(tableName, col);
-				admin.enableTable(tableName);
+				admin.disableTable(TableName.valueOf(tableName.getBytes()));
+				admin.addColumn(TableName.valueOf(tableName.getBytes()), col);
+				admin.enableTable(TableName.valueOf(tableName.getBytes()));
 			}
 		}	
 		
 	}
 	
-	public static void close(HBaseAdmin admin, HTableInterface tableInterface, HConnection hConnection){
+	public static void close(Admin admin, Table tableInterface, ClusterConnection hConnection){
 		LOG.info("Closing admin, tableInterface, hConnection...");
 		
 		try{
@@ -116,7 +125,7 @@ public class HBUtils {
 
 	public static void main(String[] args) {
 		try {
-			createTableCF(getHBaseAdmin(getConf()),"twits12", "twits112");
+			createTableCF(getHBaseAdmin(getHConnection(getConf())),"twits12", "twits112");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

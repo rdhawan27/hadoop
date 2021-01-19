@@ -11,4 +11,4 @@
 --  limitations under the License.
 --
 insert overwrite directory '${dsacd_hb_dt_gen_ms_sum_tab}'
-select concat_ws(',', collect_set(a.date)[0], a.gender, a.maritalstatus, cast(sum(a.price) as String)) from ( select dsacd_user.gender, dsacd_user.maritalstatus, dsacd_pi.date, dsacd_pi.price from dsacd_pi JOIN dsacd_user on (dsacd_pi.sessionid = dsacd_user.sessionid and dsacd_pi.timestamps= dsacd_user.timestamps) where dsacd_pi.date= '${dsacd_date}') a group by a.gender, a.maritalstatus;
+select concat_ws(',', collect_set(a.date1)[0], a.gender, a.maritalstatus, cast(sum(a.price) as String)) from ( select dsacd_user.gender, dsacd_user.maritalstatus, dsacd_pi.date1, dsacd_pi.price from dsacd_pi JOIN dsacd_user on (dsacd_pi.sessionid = dsacd_user.sessionid and dsacd_pi.timestamps= dsacd_user.timestamps) where dsacd_pi.date1= '${dsacd_date}') a group by a.gender, a.maritalstatus;

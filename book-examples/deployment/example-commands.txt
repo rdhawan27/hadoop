@@ -25,6 +25,7 @@
 [root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/pre_process
 [root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/process
 [root@sandbox-hdp ~]# hadoop fs -mkdir -p /user/root/dsacd/workflows/lib
+[root@sandbox-hdp ~]# hadoop fs -mkdir /user/root/dsacd/input_location
 #
 [root@sandbox-hdp ~]# hadoop fs -put /root/datafu-1.2.0.jar /user/root/dsacd/workflows/lib/
 [root@sandbox-hdp ~]# hadoop fs -put /root/dsacd/JSONWriteTool/lib/dsacd.jar /user/root/dsacd/workflows/lib/
@@ -33,4 +34,13 @@
 [root@sandbox-hdp ~]# hadoop fs -put /root/resources/hive/dml/*.hive /user/root/dsacd/workflows/process/
 [root@sandbox-hdp ~]# hadoop fs -put /root/resources/pig/*.pig /user/root/dsacd/workflows/process/
 [root@sandbox-hdp ~]# hadoop fs -put /root/resources/oozie/workflow/process/*.xml /user/root/dsacd/workflows/process/
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/refrence-data/dsacd_location.txt /user/root/dsacd/input_location/
 #
+[root@sandbox-hdp ~]# hadoop fs -mv /user/root/dsacd/workflows/process/createschema.hive /user/root/dsacd/workflows/pre_process/
+[root@sandbox-hdp ~]# hadoop fs -put /root/resources/oozie/workflow/pre-process/*.xml /user/root/dsacd/workflows/pre_process/
+[root@sandbox-hdp ~]# hadoop fs -put -f /usr/hdp/current/hive-client/lib/*.jar /user/root/dsacd/workflows/lib/
+#
+[root@sandbox-hdp ~]# hadoop fs -put /etc/hive/conf/hive-site.xml /user/root/dsacd/workflows/pre_process/
+[root@sandbox-hdp ~]# hadoop fs -put /etc/hive/conf/hive-site.xml /user/root/dsacd/workflows/process/
+#
+[root@sandbox-hdp ~]# oozie job -config job.properties -run

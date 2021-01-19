@@ -11,6 +11,6 @@
 --  limitations under the License.
 --
 insert overwrite directory '${dsacd_hb_email_dt_type_ct_tab}'
-select concat_ws(',', dsacd_vi.date, dsacd_vi.itemtype, dsacd_user.emailid, cast(count(dsacd_vi.itemtype) as String)) from dsacd_vi left outer join dsacd_user on (dsacd_vi.sessionid = dsacd_user.sessionid and dsacd_vi.date= dsacd_user.date and dsacd_vi.time= dsacd_user.time) where dsacd_vi.date= '${dsacd_date}' group by dsacd_user.emailid, dsacd_vi.date, dsacd_vi.itemtype; 
+select concat_ws(',', dsacd_vi.date1, dsacd_vi.itemtype, dsacd_user.emailid, cast(count(dsacd_vi.itemtype) as String)) from dsacd_vi left outer join dsacd_user on (dsacd_vi.sessionid = dsacd_user.sessionid and dsacd_vi.date1= dsacd_user.date1 and dsacd_vi.time1= dsacd_user.time1) where dsacd_vi.date1= '${dsacd_date}' group by dsacd_user.emailid, dsacd_vi.date1, dsacd_vi.itemtype; 
 --distribute by emailid, vicount
 --sort by emailid, vicount desc;

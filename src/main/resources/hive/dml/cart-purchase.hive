@@ -10,14 +10,14 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 --
-set hbase.zookeeper.quorum=${param_zoo_quorum};
-set zookeeper.znode.parent=${param_zoo_znode_parent};
+--set hbase.zookeeper.quorum=${param_zoo_quorum};
+--set zookeeper.znode.parent=${param_zoo_znode_parent};
 --set hbase.zookeeper.quorum=192.168.190.128;
 --set zookeeper.znode.parent=/hbase-unsecure;
 
 insert overwrite table dsacd_hb_cart_purch_tab
-select a.date, a.no_cartitem_count, b.no_purchaseitem_count from
-(select collect_set(dsacd_user.date)[0] as date, count(dsacd_user.sessionid) as no_cartitem_count from dsacd_user left outer join dsacd_ci on (dsacd_ci.sessionid = dsacd_user.sessionid and dsacd_ci.timestamps= dsacd_user.timestamps) where dsacd_ci.price is null and dsacd_user.date='${dsacd_date}') a
+select a.date1, a.no_cartitem_count, b.no_purchaseitem_count from
+(select collect_set(dsacd_user.date1)[0] as date1, count(dsacd_user.sessionid) as no_cartitem_count from dsacd_user left outer join dsacd_ci on (dsacd_ci.sessionid = dsacd_user.sessionid and dsacd_ci.timestamps= dsacd_user.timestamps) where dsacd_ci.price is null and dsacd_user.date1='${dsacd_date}') a
 Join
-(select collect_set(dsacd_user.date)[0] as date, count(dsacd_user.sessionid) as no_purchaseitem_count from dsacd_user left outer join dsacd_pi on (dsacd_pi.sessionid = dsacd_user.sessionid and dsacd_pi.timestamps= dsacd_user.timestamps) where dsacd_pi.price is null and dsacd_user.date='${dsacd_date}') b
-on(a.date = b.date);
+(select collect_set(dsacd_user.date1)[0] as date1, count(dsacd_user.sessionid) as no_purchaseitem_count from dsacd_user left outer join dsacd_pi on (dsacd_pi.sessionid = dsacd_user.sessionid and dsacd_pi.timestamps= dsacd_user.timestamps) where dsacd_pi.price is null and dsacd_user.date1='${dsacd_date}') b
+on(a.date1 = b.date1);

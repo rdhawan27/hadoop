@@ -10,12 +10,14 @@
 --  See the License for the specific language governing permissions and
 --  limitations under the License.
 --
+register hdfs:///user/root/dsacd/workflows/lib/hive-hcatalog-core.jar;
+register hdfs:///user/root/dsacd/workflows/lib/hive-hcatalog-pig-adapter.jar;
 /*
  * Group By IP address and date 
  */
-pig_dsacd_user = LOAD 'dsacd_user' USING org.apache.hcatalog.pig.HCatLoader();
-pig_dsacd_user_filter = FILTER pig_dsacd_user BY date == '${dsacd_date}';
-pig_dsacd_user_group = GROUP pig_dsacd_user_filter BY (ipaddress, date);
+pig_dsacd_user = LOAD 'dsacd_user' USING org.apache.hive.hcatalog.pig.HCatLoader();
+pig_dsacd_user_filter = FILTER pig_dsacd_user BY date1 == '${dsacd_date}';
+pig_dsacd_user_group = GROUP pig_dsacd_user_filter BY (ipaddress, date1);
 pig_dsacd_user_group_count = FOREACH pig_dsacd_user_group GENERATE FLATTEN(group), COUNT(pig_dsacd_user_filter) as traffic_count;
 /*
  * load location details
@@ -25,7 +27,7 @@ pig_dsacd_location = LOAD 'dsacd_location' USING org.apache.hcatalog.pig.HCatLoa
  * Join, group and project
  */
 pig_dsacd_user_location_join = JOIN pig_dsacd_user_group_count BY group::ipaddress, pig_dsacd_location BY ipaddress USING 'replicated';
-pig_dsacd_user_location_join_group = GROUP pig_dsacd_user_location_join BY (pig_dsacd_user_group_count::group::date, 'cf', pig_dsacd_location::location);
+pig_dsacd_user_location_join_group = GROUP pig_dsacd_user_location_join BY (pig_dsacd_user_group_count::group::date1, 'cf', pig_dsacd_location::location);
 pig_dsacd_date_location_traffic = FOREACH pig_dsacd_user_location_join_group GENERATE FLATTEN(group), SUM(pig_dsacd_user_location_join.pig_dsacd_user_group_count::traffic_count);
 /*
  * DUMP the results

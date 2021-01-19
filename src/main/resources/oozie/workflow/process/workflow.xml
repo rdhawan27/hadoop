@@ -25,6 +25,7 @@
             <prepare>
                 <delete path="${dsacdHbDtLocationCtTab}"/>
             </prepare>
+			<job-xml>hive-site.xml</job-xml>
             <configuration>
                 <property>
                     <name>mapreduce.job.queuename</name>
@@ -46,6 +47,7 @@
             <prepare>
                 <delete path="${dsacdHbDevicebrowgenDtCtTab}"/>
             </prepare>
+			<job-xml>hive-site.xml</job-xml>
             <configuration>
                 <property>
                     <name>mapreduce.job.queuename</name>
@@ -68,6 +70,7 @@
             <prepare>
                 <delete path="${dsacdHbDtPageCtTab}"/>
             </prepare>
+			<job-xml>hive-site.xml</job-xml>
             <configuration>
                 <property>
                     <name>mapreduce.job.queuename</name>
@@ -89,6 +92,7 @@
             <prepare>
                 <delete path="${dsacdHbDtSessionidLengthTab}"/>
             </prepare>
+			<job-xml>hive-site.xml</job-xml>
             <configuration>
                 <property>
                     <name>mapreduce.job.queuename</name>
@@ -113,6 +117,7 @@
             <prepare>
                 <delete path="${dsacdHbDtPaytypeCtTab}"/>
             </prepare>
+			<job-xml>hive-site.xml</job-xml>
             <configuration>
                 <property>
                     <name>mapreduce.job.queuename</name>
@@ -283,9 +288,9 @@
 			<arg>${nameNode}</arg>
             <arg>${uvhInputDirPath}</arg>
 			<arg>${uvhHBaseTableName}</arg>
-			<arg>${uvhDeleteInputDir}</arg>
+			<!--arg>${uvhDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="purchaseGenderMigrateHbase"/>
 		<error to="fail"/>
@@ -319,9 +324,9 @@
 			<arg>${nameNode}</arg>
             <arg>${pgInputDirPath}</arg>
 			<arg>${pgHBaseTableName}</arg>
-			<arg>${pgDeleteInputDir}</arg>
+			<!--arg>${pgDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="userPaymentMigrateHbase"/>
 		<error to="fail"/>
@@ -354,9 +359,9 @@
 			<arg>${nameNode}</arg>
             <arg>${upInputDirPath}</arg>
 			<arg>${upHBaseTableName}</arg>
-			<arg>${upDeleteInputDir}</arg>
+			<!--arg>${upDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="joiningMigrateHbase"/>
 		<error to="fail"/>
@@ -389,9 +394,9 @@
 			<arg>${nameNode}</arg>
             <arg>${saInputDirPath}</arg>
 			<arg>${saHBaseTableName}</arg>
-			<arg>${saDeleteInputDir}</arg>
+			<!--arg>${saDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="pageUserMigrateHbase"/>
 		<error to="fail"/>
@@ -424,9 +429,9 @@
 			<arg>${nameNode}</arg>
             <arg>${puInputDirPath}</arg>
 			<arg>${puHBaseTableName}</arg>
-			<arg>${puDeleteInputDir}</arg>
+			<!--arg>${puDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="locationTrafficMigrateHbase"/>
 		<error to="fail"/>
@@ -459,9 +464,9 @@
 			<arg>${nameNode}</arg>
             <arg>${ltInputDirPath}</arg>
 			<arg>${ltHBaseTableName}</arg>
-			<arg>${ltDeleteInputDir}</arg>
+			<!--arg>${ltDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="browserDeviceMigrateHbase"/>
 		<error to="fail"/>
@@ -494,9 +499,9 @@
 			<arg>${nameNode}</arg>
             <arg>${bdInputDirPath}</arg>
 			<arg>${bdHBaseTableName}</arg>
-			<arg>${bdDeleteInputDir}</arg>
+			<!--arg>${bdDeleteInputDir}</arg>
 			<arg>${paramZooQuorum}</arg>
-			<arg>${paramZooZnodeParent}</arg>
+			<arg>${paramZooZnodeParent}</arg-->
 		</java>
 		<ok to="joiningMigrateHbase"/>
 		<error to="fail"/>
