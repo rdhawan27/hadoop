@@ -39,6 +39,7 @@
 [root@sandbox-hdp ~]# hadoop fs -mv /user/root/dsacd/workflows/process/createschema.hive /user/root/dsacd/workflows/pre_process/
 [root@sandbox-hdp ~]# hadoop fs -put /root/resources/oozie/workflow/pre-process/*.xml /user/root/dsacd/workflows/pre_process/
 [root@sandbox-hdp ~]# hadoop fs -put -f /usr/hdp/current/hive-client/lib/*.jar /user/root/dsacd/workflows/lib/
+[root@sandbox-hdp ~]# hadoop fs -put -f /usr/hdp/current/hbase-client/lib/*.jar /user/root/dsacd/workflows/lib/
 #
 [root@sandbox-hdp ~]# hadoop fs -put /etc/hive/conf/hive-site.xml /user/root/dsacd/workflows/pre_process/
 [root@sandbox-hdp ~]# hadoop fs -put /etc/hive/conf/hive-site.xml /user/root/dsacd/workflows/process/
