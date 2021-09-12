@@ -9,7 +9,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-  */
+  *//*
+
 package biz.ds.www.utils.hbase;
 
 import java.io.IOException;
@@ -40,9 +41,11 @@ public class HBUtils {
 	
 	//Configuration conf = HBaseConfiguration.create();
 	
-	/*public static HTableDescriptor getTD(){
+	*/
+/*public static HTableDescriptor getTD(){
 		
-	}*/
+	}*//*
+
 	
 	public  static Configuration getConf() throws MasterNotRunningException, ZooKeeperConnectionException, IOException{
 		Configuration conf = HBaseConfiguration.create();
@@ -132,3 +135,4 @@ public class HBUtils {
 		}
 	}
 }
+*/

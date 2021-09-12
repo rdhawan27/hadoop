@@ -9,7 +9,8 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-  */
+  *//*
+
 package biz.ds.www.utils.hbase;
 
 import java.io.BufferedReader;
@@ -35,8 +36,10 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.ClusterConnection;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+*/
 /*import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HTableInterface;*/
+import org.apache.hadoop.hbase.client.HTableInterface;*//*
+
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -53,12 +56,14 @@ public class MigrateToHbase {
 	
 	private static String nameNode, inputDir, hbTN;
 	
-	/**
+	*/
+/**
 	 * @param args
 	 * @throws CheckParamsException 
 	 * @throws URISyntaxException 
 	 * @throws IOException 
-	 */
+	 *//*
+
 	public static void main(String[] args) throws CheckParamsException, IOException, URISyntaxException {
 		LOG.info("Starting MigrateToHbase:main[args]...");
 		
@@ -131,7 +136,9 @@ public class MigrateToHbase {
 			HBUtils.createTableCF(admin, hbTN, cf );
 		}
 		
-		/*HTableDescriptor tableInterface = HBUtils.getHTableInterface( hbTN);*/
+		*/
+/*HTableDescriptor tableInterface = HBUtils.getHTableInterface( hbTN);*//*
+
 		
 		Table table = conn.getTable(TableName.valueOf(hbTN.getBytes()));
 		for(Map.Entry<String, Put> entry: putMap.entrySet()){
@@ -143,3 +150,4 @@ public class MigrateToHbase {
 	}
 
 }
+*/
